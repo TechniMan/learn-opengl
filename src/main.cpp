@@ -12,9 +12,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+bool g_wireframeMode = false;
+bool g_spaceHeldDown = false;
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+    else if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !g_spaceHeldDown) {
+        if (g_wireframeMode) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            g_wireframeMode = false;
+        }
+        else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            g_wireframeMode = true;
+        }
+        g_spaceHeldDown = true;
+    }
+    else if (g_spaceHeldDown && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+        g_spaceHeldDown = false;
     }
 }
 
