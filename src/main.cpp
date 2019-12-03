@@ -7,6 +7,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 //local
+#include "Shader.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -69,71 +70,15 @@ int main(int argc, char ** args) {
     glViewport(0, 0, windowWidth, windowHeight);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // setup vertex shader
-    GLuint vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    std::ifstream vsfile("../shaders/basic.vs");
-    std::stringstream vsss = std::stringstream();
-    vsss << vsfile.rdbuf();
-    const std::string& vertexShaderSource = vsss.str();
-    const char* vss = vertexShaderSource.c_str();
-    glShaderSource(vertexShader, 1, &vss, NULL);
-    glCompileShader(vertexShader);
-    int success;
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-        std::cout << "ERROR::VERTEX SHADER COMPILATION FAILED:" << std::endl << infoLog << std::endl;
-        exitProcess();
-        return 3;
-    }
-
-    // setup fragment shader
-    GLuint fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    std::ifstream file("../shaders/basic.fs");
-    std::stringstream ss = std::stringstream();
-    ss << file.rdbuf();
-    const std::string& fragmentShaderSource = ss.str();
-    const char* fss = fragmentShaderSource.c_str();
-    glShaderSource(fragmentShader, 1, &fss, nullptr);
-    glCompileShader(fragmentShader);
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cout << "ERROR::FRAGMENT SHADER COMPILATION FAILED:" << std::endl << infoLog << std::endl;
-        exitProcess();
-        return 4;
-    }
-
     // setup shader program
-    GLuint shaderProgram;
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-        std::cout << "ERROR::SHADER PROGRAM LINKING FAILED:" << std::endl << infoLog << std::endl;
-        exitProcess();
-        return 5;
-    }
-    
-    // cleanup shaders
-    glUseProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    Shader basicShader("../shaders/basic.vs", "../shaders/basic.fs");
 
     // setup triangle
     GLfloat vertices[] = {
-         0.5f,  0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        -0.5f,  0.5f, 0.0f
+         0.5f,  0.5f, 0.0f,  0.5f, 0.5f, 0.5f,
+         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f, 0.0f,  0.0f, 1.0f, 0.0f
     };
     GLushort indices[] = {
         0, 1, 2,
@@ -154,8 +99,10 @@ int main(int argc, char ** args) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
 
     glClearColor(0.39f, 0.58f, 0.93f, 1.0f);
 
@@ -166,7 +113,8 @@ int main(int argc, char ** args) {
 
         // rendering
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(shaderProgram);
+        basicShader.Use();
+        basicShader.SetFloat("time", glfwGetTime());
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
         glBindVertexArray(0U);
