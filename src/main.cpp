@@ -3,9 +3,12 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-//gl/glfw
+//gl
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 //local
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -124,7 +127,7 @@ int main(int argc, char ** args) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     GLint width0, height0, numChannels0;
-    unsigned char * data0 = stbi_load("../assets/crate-col.png", &width0, &height0, &numChannels0, 0);
+    unsigned char * data0 = stbi_load("../assets/container.jpg", &width0, &height0, &numChannels0, 0);
     if (data0) {
         GLint format = GL_RGB;
         if (numChannels0 == 4) { format = GL_RGBA; }
@@ -145,7 +148,7 @@ int main(int argc, char ** args) {
     glBindTexture(GL_TEXTURE_2D, texture1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     GLint width1, height1, numChannels1;
     unsigned char * data1 = stbi_load("../assets/awesomeface.png", &width1, &height1, &numChannels1, 0);
@@ -153,7 +156,7 @@ int main(int argc, char ** args) {
         GLint format = GL_RGB;
         if (numChannels1 == 4) { format = GL_RGBA; }
         glTexImage2D(GL_TEXTURE_2D, 0, format, width1, height1, 0, format, GL_UNSIGNED_BYTE, data1);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        //glGenerateMipmap(GL_TEXTURE_2D);
     }
     else {
         std::cout << "ERROR::TEXTURE::FAILED TO LOAD awesomeface.png" << std::endl;
@@ -162,6 +165,8 @@ int main(int argc, char ** args) {
     }
     stbi_image_free(data1);
     basicShader.SetInt("texture1", 1);
+
+    // transfiguration
 
     glClearColor(0.39f, 0.58f, 0.93f, 1.0f);
 
@@ -179,7 +184,21 @@ int main(int argc, char ** args) {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture1);
         glBindVertexArray(VAO);
+        
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 1.0f));
+        basicShader.SetMatrix4("transform", trans);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+
+        trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
+        trans = glm::rotate(trans, -(float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        trans = glm::scale(trans, glm::vec3(2.0f, 2.0f, 1.0f));
+        basicShader.SetMatrix4("transform", trans);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+
         glBindVertexArray(0U);
 
         // end of loop

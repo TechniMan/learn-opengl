@@ -2,6 +2,8 @@
 #define _SHADER_HPP_
 
 #include <glad/glad.h>
+#include <glm/matrix.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <string>
 #include <fstream>
@@ -18,6 +20,7 @@ public:
     void SetBool(const std::string& name, GLboolean value) const;
     void SetInt(const std::string& name, GLint value) const;
     void SetFloat(const std::string& name, GLfloat value) const;
+    void SetMatrix4(const std::string& name, glm::mat4 value) const;
     void SetUInt(const std::string& name, GLuint value) const;
 };
 
