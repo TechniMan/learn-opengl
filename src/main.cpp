@@ -7,6 +7,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 //local
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include "Shader.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -35,7 +37,7 @@ void processInput(GLFWwindow* window) {
     }
 }
 
-void exitProcess() {
+void cleanup() {
     glfwTerminate();
 }
 
@@ -54,7 +56,7 @@ int main(int argc, char ** args) {
     GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Learning OpenGL", nullptr, nullptr);
     if (window == nullptr) {
         std::cout << "ERROR::glfwCreateWindow FAILED." << std::endl;
-        exitProcess();
+        cleanup();
         return 1;
     }
     glfwMakeContextCurrent(window);
@@ -62,7 +64,7 @@ int main(int argc, char ** args) {
     // load glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "ERROR::gladLoadGLLoader FAILED." << std::endl;
-        exitProcess();
+        cleanup();
         return 2;
     }
 
@@ -72,13 +74,14 @@ int main(int argc, char ** args) {
 
     // setup shader program
     Shader basicShader("../shaders/basic.vs", "../shaders/basic.fs");
+    basicShader.Use();
 
     // setup triangle
     GLfloat vertices[] = {
-         0.5f,  0.5f, 0.0f,  0.5f, 0.5f, 0.5f,
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
-        -0.5f,  0.5f, 0.0f,  0.0f, 1.0f, 0.0f
+         0.5f,  0.5f, 0.0f,  0.5f, 0.5f, 0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f
     };
     GLushort indices[] = {
         0, 1, 2,
@@ -99,10 +102,66 @@ int main(int argc, char ** args) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    GLsizei stride = 8 * sizeof(GLfloat);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
+
+    // load texture
+    stbi_set_flip_vertically_on_load(true);
+
+    glActiveTexture(GL_TEXTURE0);
+    GLuint texture0;
+    glGenTextures(1, &texture0);
+    glBindTexture(GL_TEXTURE_2D, texture0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    //float borderColour[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    //glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColour);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLint width0, height0, numChannels0;
+    unsigned char * data0 = stbi_load("../assets/crate-col.png", &width0, &height0, &numChannels0, 0);
+    if (data0) {
+        GLint format = GL_RGB;
+        if (numChannels0 == 4) { format = GL_RGBA; }
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width0, height0, 0, format, GL_UNSIGNED_BYTE, data0);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+        std::cout << "ERROR::TEXTURE::FAILED TO LOAD crate-col.png" << std::endl;
+        cleanup();
+        return 3;
+    }
+    stbi_image_free(data0);
+    basicShader.SetInt("texture0", 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    GLuint texture1;
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLint width1, height1, numChannels1;
+    unsigned char * data1 = stbi_load("../assets/awesomeface.png", &width1, &height1, &numChannels1, 0);
+    if (data1) {
+        GLint format = GL_RGB;
+        if (numChannels1 == 4) { format = GL_RGBA; }
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width1, height1, 0, format, GL_UNSIGNED_BYTE, data1);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+        std::cout << "ERROR::TEXTURE::FAILED TO LOAD awesomeface.png" << std::endl;
+        cleanup();
+        return 3;
+    }
+    stbi_image_free(data1);
+    basicShader.SetInt("texture1", 1);
 
     glClearColor(0.39f, 0.58f, 0.93f, 1.0f);
 
@@ -115,6 +174,10 @@ int main(int argc, char ** args) {
         glClear(GL_COLOR_BUFFER_BIT);
         basicShader.Use();
         basicShader.SetFloat("time", glfwGetTime());
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture1);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
         glBindVertexArray(0U);
@@ -124,6 +187,6 @@ int main(int argc, char ** args) {
         glfwPollEvents();
     }
 
-    glfwTerminate();
+    cleanup();
     return 0;
 }
