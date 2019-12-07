@@ -13,6 +13,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "Shader.hpp"
+#include "Camera.hpp"
 
 int screenWidth = 800, screenHeight = 600;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -21,13 +22,20 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     screenHeight = height;
 }
 
+GLfloat g_deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
+
 bool g_wireframeMode = false;
 bool g_spaceHeldDown = false;
+Camera g_camera;
+GLfloat fov = 45.0f;
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
+        return;
     }
-    else if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !g_spaceHeldDown) {
+    
+    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !g_spaceHeldDown) {
         if (g_wireframeMode) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             g_wireframeMode = false;
@@ -41,6 +49,52 @@ void processInput(GLFWwindow* window) {
     else if (g_spaceHeldDown && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
         g_spaceHeldDown = false;
     }
+    
+    glm::vec3 axesMovement(0.0f);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        axesMovement.z += 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        axesMovement.z -= 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        axesMovement.x += 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        axesMovement.x -= 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+        axesMovement.y += 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+        axesMovement.y -= 1.0f;
+    }
+    g_camera.Translate(axesMovement, g_deltaTime);
+    
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        fov = 10.0f;
+    }
+    else {
+        fov = 45.0f;
+    }
+}
+
+const GLfloat mouseSensitivity = 0.05f;
+GLfloat lastX = 400, lastY = 300;
+bool firstMouse = true;
+void cursor_callback(GLFWwindow* window, GLdouble xpos, GLdouble ypos) {
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    GLfloat xDiff = (xpos - lastX) * mouseSensitivity;
+    GLfloat yDiff = (lastY - ypos) * mouseSensitivity;
+    lastX = xpos;
+    lastY = ypos;
+
+    g_camera.UpdateYawAndPitch(xDiff, yDiff);
 }
 
 void cleanup() {
@@ -75,6 +129,8 @@ int main(int argc, char ** args) {
     // setup viewport
     glViewport(0, 0, screenWidth, screenHeight);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, cursor_callback);
 
     // setup shader program
     Shader basicShader("../shaders/basic.vs", "../shaders/basic.fs");
@@ -216,6 +272,9 @@ int main(int argc, char ** args) {
 
     // The Loop
     while (!glfwWindowShouldClose(window)) {
+        const GLfloat currentFrame = glfwGetTime();
+        g_deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
         // update
         processInput(window);
 
@@ -229,11 +288,12 @@ int main(int argc, char ** args) {
         glBindTexture(GL_TEXTURE_2D, texture1);
         glBindVertexArray(VAO);
         
+        // camera
         glm::mat4 view(1.0f);
-        view = glm::translate(view, glm::vec3(std::sin((float)glfwGetTime()), 0.0f, -3.0f));
+        view = g_camera.GetViewMatrix();
         basicShader.SetMatrix4("view", view);
         glm::mat4 proj(1.0f);
-        proj = glm::perspective(glm::radians(45.0f), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+        proj = glm::perspective(glm::radians(fov), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
         basicShader.SetMatrix4("proj", proj);
 
         for (int i = 0; i < 10; ++i) {
