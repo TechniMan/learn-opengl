@@ -23,6 +23,7 @@ public:
     void UpdateYawAndPitch(GLfloat yaw, GLfloat pitch) noexcept;
     void Translate(glm::vec3 axes, GLfloat deltaTime) noexcept;
 
+    glm::vec3 GetPosition(void) const noexcept;
     glm::mat4 GetViewMatrix(void) const noexcept;
 };
 

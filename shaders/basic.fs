@@ -1,16 +1,39 @@
 #version 330 core
-in vec4 vertexColour;
-in vec2 vertexTexCoord;
+struct Material {
+    vec3 Ambient;
+    vec3 Diffuse;
+    vec3 Specular;
+    float Shininess;
+};
+struct Light {
+    vec3 Position;
+    vec3 Ambient;
+    vec3 Diffuse;
+    vec3 Specular;
+};
 
-uniform sampler2D texture0;
-uniform sampler2D texture1;
-uniform float time;
+in vec3 vertexWorldPosition;
+in vec3 vertexNormal;
+
+uniform Material material;
+uniform Light light;
+uniform vec3 eyePos;
 
 out vec4 fragColour;
 
 void main()
 {
-    //vec4(1.0 - 0.3922, 1.0 - 0.5843, 1.0 - 0.9294, 1.0)
-    //fragColour = vertexColour * mix(texture(texture0, vertexTexCoord), texture(texture1, vertexTexCoord), abs(sin(time)) * 0.5);
-    fragColour = vertexColour * texture(texture0, vertexTexCoord) + mix(vec4(0.0, 0.0, 0.0, 1.0), texture(texture1, vertexTexCoord), abs(sin(time)) * 0.1);
+    vec3 ambient = light.Ambient * material.Ambient;
+
+    vec3 normal = normalize(vertexNormal);
+    vec3 lightDir = normalize(light.Position - vertexWorldPosition);
+    vec3 diffuse = light.Diffuse * max(dot(normal, lightDir), 0.0) * material.Diffuse;
+
+    vec3 eyeDir = normalize(eyePos - vertexWorldPosition);
+    vec3 reflection = reflect(-lightDir, normal);
+    float spec = pow(max(dot(eyeDir, reflection), 0.0), 32);
+    vec3 specular = light.Specular * spec * material.Specular;
+    
+    vec3 result = ambient + diffuse + specular;
+    fragColour = vec4(result, 1.0);
 }

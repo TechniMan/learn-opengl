@@ -133,52 +133,53 @@ int main(int argc, char ** args) {
     glfwSetCursorPosCallback(window, cursor_callback);
 
     // setup shader program
+    Shader textureShader("../shaders/texture.vs", "../shaders/texture.fs");
     Shader basicShader("../shaders/basic.vs", "../shaders/basic.fs");
     basicShader.Use();
 
     // setup mesh data
     GLfloat vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
 
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
 
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
 
     glm::vec3 cubePositions[] = {
@@ -200,7 +201,7 @@ int main(int argc, char ** args) {
     GLuint EBO;
     glGenBuffers(1, &EBO);
 
-    // vertex array object
+    // texture vertex array object
     GLuint VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -208,11 +209,14 @@ int main(int argc, char ** args) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    GLsizei stride = 5 * sizeof(GLfloat);
+    GLsizei stride = 6 * sizeof(GLfloat);
+    //GLsizei stride = 8 * sizeof(GLfloat);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, stride, (void*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
+    //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(GLfloat)));
+    //glEnableVertexAttribArray(2);
 
     // load texture
     stbi_set_flip_vertically_on_load(true);
@@ -241,7 +245,7 @@ int main(int argc, char ** args) {
         return 3;
     }
     stbi_image_free(data0);
-    basicShader.SetInt("texture0", 0);
+    textureShader.SetInt("texture0", 0);
 
     glActiveTexture(GL_TEXTURE1);
     GLuint texture1;
@@ -265,7 +269,7 @@ int main(int argc, char ** args) {
         return 3;
     }
     stbi_image_free(data1);
-    basicShader.SetInt("texture1", 1);
+    textureShader.SetInt("texture1", 1);
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.39f, 0.58f, 0.93f, 1.0f);
@@ -281,7 +285,7 @@ int main(int argc, char ** args) {
         // rendering
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         basicShader.Use();
-        basicShader.SetFloat("time", glfwGetTime());
+        basicShader.SetVector3("lightColour", glm::vec3(1.0f));
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture0);
         glActiveTexture(GL_TEXTURE1);
@@ -295,11 +299,31 @@ int main(int argc, char ** args) {
         glm::mat4 proj(1.0f);
         proj = glm::perspective(glm::radians(fov), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
         basicShader.SetMatrix4("proj", proj);
+        basicShader.SetVector3("eyePos", g_camera.GetPosition());
+
+        GLfloat time = (float)glfwGetTime();
+        glm::vec3 lightPos = 2.0f * glm::vec3(sin(time), sin(time), cos(time));
+        basicShader.SetVector3("light.Position", lightPos);
+        basicShader.SetVector3("light.Ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+        basicShader.SetVector3("light.Diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+        basicShader.SetVector3("light.Specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        {
+            glm::mat4 world(1.0f);
+            world = glm::translate(world, lightPos);
+            world = glm::scale(world, glm::vec3(0.1f));
+            basicShader.SetMatrix4("world", world);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
+        basicShader.SetVector3("material.Ambient", glm::vec3(0.1f, 0.05f, 0.031f));
+        basicShader.SetVector3("material.Diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+        basicShader.SetVector3("material.Specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        basicShader.SetFloat("material.Shininess", 32.0f);
 
         for (int i = 0; i < 10; ++i) {
             glm::mat4 world(1.0f);
             world = glm::translate(world, cubePositions[i]);
-            world = glm::rotate(world, (float)glfwGetTime() * glm::radians(20.0f * i), glm::vec3(1.0f, 0.3f, 0.5f));
+            world = glm::rotate(world, time * glm::radians(20.0f * i), glm::vec3(1.0f, 0.3f, 0.5f));
             basicShader.SetMatrix4("world", world);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }

@@ -30,6 +30,10 @@ void Camera::Translate(glm::vec3 axes, GLfloat deltaTime) noexcept {
     m_position += axes.z * m_forward * speed;
 }
 
+glm::vec3 Camera::GetPosition(void) const noexcept {
+    return m_position;
+}
+
 glm::mat4 Camera::GetViewMatrix(void) const noexcept {
     return glm::lookAt(m_position, m_position + m_forward, m_up);
 }

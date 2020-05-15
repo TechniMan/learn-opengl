@@ -22,6 +22,7 @@ public:
     void SetFloat(const std::string& name, GLfloat value) const;
     void SetMatrix4(const std::string& name, glm::mat4 value) const;
     void SetUInt(const std::string& name, GLuint value) const;
+    void SetVector3(const std::string& name, glm::vec3 value) const;
 };
 
 #endif //_SHADER_HPP_
